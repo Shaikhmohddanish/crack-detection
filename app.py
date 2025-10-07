@@ -11,16 +11,6 @@ DEFAULT_IMGSZ = int(os.getenv("IMGSZ", "640"))
 DEFAULT_CONF  = float(os.getenv("CONF", "0.25"))
 DEVICE        = os.getenv("DEVICE", "cpu")  # <- Intel Mac: use CPU
 
-# Ensure model file exists before loading
-if not os.path.exists(WEIGHTS_PATH):
-    import urllib.request
-    url = os.getenv("WEIGHTS_URL")  # set this in Render env if needed
-    if url:
-        print(f"Downloading model from {url}...")
-        urllib.request.urlretrieve(url, WEIGHTS_PATH)
-    else:
-        print(f"Warning: Model file {WEIGHTS_PATH} not found. Make sure it's in your repository.")
-
 app = Flask(__name__, template_folder='templates')
 CORS(app)
 
