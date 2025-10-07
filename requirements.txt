@@ -1,10 +1,12 @@
 flask==3.0.3
 flask-cors==4.0.0
-numpy<2.0  # Ensures compatibility with PyTorch and Ultralytics
-# Use specific versions that have pre-built wheels for Python 3.13
-ultralytics==8.0.207  # Has wheels for Python 3.13
-torch==2.7.1  # Stable version with Python 3.13 wheels
-torchvision==0.18.1  # Compatible with torch 2.7.1
-Pillow==10.1.0  # More compatible version with pre-built wheels
-opencv-python-headless==4.8.1.78  # Smaller package, no GUI dependencies
-gunicorn==22.0.0
+# CPU torch + torchvision for py3.11 linux x86_64
+torch==2.2.2
+torchvision==0.17.2
+# Ultralytics version that runs YOLOv8/11 inference fine on torch 2.2.* 
+ultralytics==8.2.103
+# Matching libs that have wheels for py3.11
+numpy<2.0
+Pillow==10.3.0
+opencv-python-headless==4.9.0.80
+gunicorn==21.2.0
