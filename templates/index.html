@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crack Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .upload-container {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #preview, #result {
+            max-width: 100%;
+            margin-top: 20px;
+            display: none;
+        }
+        .param-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        .param-container div {
+            width: 48%;
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .image-box {
+            width: 48%;
+            margin-bottom: 20px;
+        }
+        .image-box h3 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Crack Detection Tool</h1>
+    
+    <div class="upload-container">
+        <h2>Upload an image</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="imageInput" accept="image/*" />
+            
+            <div class="param-container">
+                <div>
+                    <label for="confInput">Confidence threshold:</label>
+                    <input type="range" id="confInput" min="0.1" max="0.9" step="0.05" value="0.25">
+                    <span id="confValue">0.25</span>
+                </div>
+                <div>
+                    <label for="imgsizeInput">Image size:</label>
+                    <select id="imgsizeInput">
+                        <option value="320">320</option>
+                        <option value="416">416</option>
+                        <option value="512">512</option>
+                        <option value="640" selected>640</option>
+                        <option value="736">736</option>
+                        <option value="1024">1024</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button type="submit">Detect Cracks</button>
+        </form>
+    </div>
+    
+    <div class="loader" id="loader"></div>
+    
+    <div class="image-container">
+        <div class="image-box">
+            <h3>Original Image</h3>
+            <img id="preview" src="#" alt="Image preview" />
+        </div>
+        <div class="image-box">
+            <h3>Detected Cracks</h3>
+            <img id="result" src="#" alt="Detection result" />
+        </div>
+    </div>
+    
+    <div id="stats">
+        <p id="inferenceTime"></p>
+        <p id="detections"></p>
+    </div>
+    
+    <script>
+        document.getElementById('confInput').addEventListener('input', function() {
+            document.getElementById('confValue').textContent = this.value;
+        });
+        
+        document.getElementById('imageInput').addEventListener('change', function(event) {
+            const preview = document.getElementById('preview');
+            const file = event.target.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+                document.getElementById('result').style.display = 'none';
+                document.getElementById('inferenceTime').textContent = '';
+                document.getElementById('detections').textContent = '';
+            }
+        });
+        
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const file = document.getElementById('imageInput').files[0];
+            if (!file) {
+                alert('Please select an image first');
+                return;
+            }
+            
+            const conf = document.getElementById('confInput').value;
+            const imgsize = document.getElementById('imgsizeInput').value;
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('conf', conf);
+            formData.append('imgsz', imgsize);
+            
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+            
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                const inferenceTime = response.headers.get('X-Inference-Time');
+                const detections = response.headers.get('X-Detections');
+                
+                document.getElementById('inferenceTime').textContent = `Inference time: ${inferenceTime}`;
+                document.getElementById('detections').textContent = `Detections: ${detections}`;
+                
+                return response.blob();
+            })
+            .then(blob => {
+                const result = document.getElementById('result');
+                result.src = URL.createObjectURL(blob);
+                result.style.display = 'block';
+                loader.style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error processing the image. Please try again.');
+                loader.style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>
