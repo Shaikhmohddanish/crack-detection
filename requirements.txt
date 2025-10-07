@@ -1,11 +1,16 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 flask==3.0.3
 flask-cors==4.0.0
-# CPU torch + torchvision for py3.11 linux x86_64
-torch==2.2.2
-torchvision==0.17.2
-# Ultralytics version that runs YOLOv8/11 inference fine on torch 2.2.* 
-ultralytics==8.2.103
-# Matching libs that have wheels for py3.11
+
+# CPU-only wheels for Linux + Python 3.11
+torch==2.2.2+cpu
+torchvision==0.17.2+cpu
+
+# Ultralytics new enough for YOLOv11 (C3k2 etc.)
+ultralytics==8.3.205
+
+# Stable wheels that work with the above
 numpy<2.0
 Pillow==10.3.0
 opencv-python-headless==4.9.0.80

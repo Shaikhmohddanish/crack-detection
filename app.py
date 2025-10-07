@@ -11,6 +11,10 @@ DEFAULT_IMGSZ = int(os.getenv("IMGSZ", "640"))
 DEFAULT_CONF  = float(os.getenv("CONF", "0.25"))
 DEVICE        = os.getenv("DEVICE", "cpu")  # <- Intel Mac: use CPU
 
+# Verify model file exists
+if not os.path.exists(WEIGHTS_PATH):
+    raise RuntimeError(f"Model file {WEIGHTS_PATH} not found. Make sure it's in your repository.")
+
 app = Flask(__name__, template_folder='templates')
 CORS(app)
 
