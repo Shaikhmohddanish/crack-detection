@@ -49,6 +49,8 @@ def _limit_body():
     if cl is not None and cl > MAX_BYTES:
         abort(413)  # Payload Too Large
 
+model = YOLO(WEIGHTS_PATH)
+
 def _resize_if_needed(pil_img, max_side=MAX_LONG_SIDE):
     w, h = pil_img.size
     long_side = max(w, h)
@@ -57,8 +59,6 @@ def _resize_if_needed(pil_img, max_side=MAX_LONG_SIDE):
     scale = max_side / float(long_side)
     new_w, new_h = int(w * scale), int(h * scale)
     return pil_img.resize((new_w, new_h))
-
-model = YOLO(WEIGHTS_PATH)
 
 @app.get("/")
 def index():
@@ -186,6 +186,22 @@ def predict_json():
     except Exception as e:
         log.exception("predict_json failed")
         return jsonify({"error": str(e)}), 500
+
+@app.get("/debug")
+def debug():
+    exists = os.path.exists(WEIGHTS_PATH)
+    size = os.path.getsize(WEIGHTS_PATH) if exists else None
+    import ultralytics
+    import sys
+    return jsonify({
+        "python": sys.version,
+        "torch": torch.__version__,
+        "ultralytics": ultralytics.__version__,
+        "cv2": cv2.__version__,
+        "weights_path": WEIGHTS_PATH,
+        "weights_exists": exists,
+        "weights_size_bytes": size
+    })
 
 if __name__ == "__main__":
     # dev server when run directly
